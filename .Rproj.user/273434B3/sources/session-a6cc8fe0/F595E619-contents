@@ -156,7 +156,6 @@ print(names(datos_apilados_raw))
 
 
 # --- PASO 6: Filtrar para conservar solo los folios presentes en AMBOS años ---
-# (Este código es igual al de la respuesta anterior)
 
 # Contamos cuántos años distintos tiene cada folio en los datos apilados.
 folios_con_conteo_años <- datos_apilados_raw %>%
@@ -177,7 +176,6 @@ datos_longitudinales_final <- datos_longitudinales_final %>%
   arrange(!!sym(columna_folio), año)
 
 # --- PASO 7: Verificación final ---
-# (Este código es igual al de la respuesta anterior)
 cat("\nDimensiones finales de datos longitudinales (formato largo, solo columnas comunes):", dim(datos_longitudinales_final), "\n")
 cat("Folios únicos en el dataset final (presentes en ambos años):", n_distinct(datos_longitudinales_final[[columna_folio]]), "\n")
 
@@ -196,20 +194,26 @@ print(names(datos_longitudinales_final))
 
 ### To do
 
--   Extraer el ciuo8 de la historia laboral
+-   Calcular el ingreso anual / ingreso promedio mensual (discutir, por mientras haría cualquiera de las dos)
 
--   Unir las bases de datos de 2020 y 2024
+    -   Para esto hay que o sumar o promediar los datos de ingreso de los individuos
+
+    -   Creo que hay una variable de ingreso mensual promedio, que es menos exacta ya que la responde la persona, pero por mientras podría servir.
+
+    -   Crear una variable ingreso-calculo (o un nombre más explicativo) para cada folio en ambos ciclos. Esta servirá para calcular el ratio de deuda total sobre ingreso.
+
+-   Extraer el ciuo8 de la historia laboral:
+
+    -   Para esto hay que seleccionar solo el último ciclo del módulo de historia laboral por cada individuo. Si justo estaba cesante, quedarse con el último trabajado (discutir esto último)
+
+    -   Para cada individuo dejar solo el último dato de su posición ciuo8. Debería quedar una fila por individuo
 
 -   Calcular el rci_dt de cada folio (individuo)
 
+    -   Para esto primero hay que calcular la deuda total. Hay varias variables en el módulo D que tienen montos de deuda por diferentes tipos. Hay que sumarla toda y crear una variable 'deuda total'
+
+-   Crear EGP en base a la categoría CIUO8 final
+
 -   Ver relación bivariada entre EGP y rci_dt en la muestra completa
 
--   Realizar un par de gráficos
-
-### Temas a conversar
-
--   Cómo tratar ciuo8: nos quedamos con la última pega de la historia laboral
-
--   Qué variables utilizamos para construir el rci
-
--   Qué variables control agregamos
+-   Realizar un par de gráficos: propongo gráficos de barra entre EGP y rci-dt
