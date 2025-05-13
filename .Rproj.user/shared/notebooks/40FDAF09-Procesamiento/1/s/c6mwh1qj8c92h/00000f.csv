@@ -1,6 +1,6 @@
 "0","# install.packages(""pacman"")"
 "0","library(pacman)"
-"0",""
+"2","Aviso: package ‘pacman’ was built under R version 4.4.2"
 "0","pacman::p_load("
 "0","  dplyr,"
 "0","  haven,"
