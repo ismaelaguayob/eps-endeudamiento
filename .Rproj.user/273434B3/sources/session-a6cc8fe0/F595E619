@@ -1,0 +1,32 @@
+{
+    "id": "F595E619",
+    "path": "~/eps-endeudamiento/Procesamiento.qmd",
+    "project_path": "Procesamiento.qmd",
+    "type": "quarto_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1745889327347.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "96,0",
+        "scrollLine": "0",
+        "rmdVisualMode": "true",
+        "rmdVisualWrapConfigured": "true",
+        "docOutlineVisible": "1",
+        "rmdVisualCollapsedChunks": "",
+        "rmdVisualModeLocation": "4373:2440",
+        "docOutlineSize": "218"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1746777579,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1746777579662,
+    "read_only": false,
+    "read_only_alternatives": []
+}

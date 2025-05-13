@@ -1,0 +1,6 @@
+"0",""
+"0","modulo_a_2024 <- read_stata(""./datos-2024/MODULO_A_ENTREVISTADO.dta"")"
+"0","modulo_b__2024 <- read_stata(""./datos-2024/MODULO_B_HISTORIA_LABORAL.dta"")"
+"0","modulo_c_2024 <- read_stata(""./datos-2024/MODULO_C_ENTREVISTADO.dta"")"
+"0","modulo_d_2024 <- read_stata(""./datos-2024/MODULO_D_ENTREVISTADO.dta"")"
+"0",""

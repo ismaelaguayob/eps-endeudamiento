@@ -1,0 +1,5 @@
+"0",""
+"0","#modulo_a_2015 <- read_stata(""./datos-2015/MODULOA_Entrevistado.dta"")"
+"0","#modulo_b_2015 <- read_stata(""./datos-2015/MODULOB_Historia_Laboral.dta"")"
+"0","#modulo_c_2015 <- read_stata(""./datos-2015/MODULOC_Entrevistado.dta"")"
+"0","#modulo_d_2015 <- read_stata(""./datos-2015/MODULOD_Entrevistado.dta"")"
