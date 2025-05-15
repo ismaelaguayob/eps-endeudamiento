@@ -21,6 +21,25 @@ options(scipen = 999) # para desactivar notacion cientifica
 rm(list = ls()) # para limpiar el entorno de trabajo
 ```
 
+### Funcion para quitar labels
+
+```{r}
+
+limpiar_labels <- function(df) {
+  df %>%
+    mutate(across(everything(), ~ {
+      # Eliminar atributo 'label'
+      attr(., "label") <- NULL
+      # Convertir labelled a su tipo base (por ejemplo, double)
+      if (is.labelled(.)) {
+        as_vector(.)
+      } else {
+        .
+      }
+    }))
+}
+```
+
 ### Carga de datos 2015
 
 ```{r}
@@ -39,6 +58,24 @@ modulo_a_2020 <- read_stata("./datos-2020/MODULO_A_Entrevistado_in.dta")
 modulo_b_2020 <- read_stata("./datos-2020/MODULO_B_Historia_Laboral_in.dta")
 modulo_c_2020 <- read_stata("./datos-2020/MODULO_C_Entrevistado_in.dta")
 modulo_d_2020 <- read_stata("./datos-2020/MODULO_D_Entrevistado_in.dta")
+
+modulo_c_2020 <- modulo_c_2020 %>% 
+  mutate(c34=c34_ed)
+
+modulo_d_2020 <- modulo_d_2020 %>% 
+  mutate(
+    d37m_2 = d37m_2_ed,
+    d37m_3 = d37m_3_ed,
+    d37m_5 = d37m_5_ed,
+    d37m_6 = d37m_6_ed,
+    d37m_7 = d37m_7_ed,
+    d37m_8 = d37m_8_ed,
+    d37m_9 = d37m_9_ed,
+    d37m_10 = d37m_10_ed,
+    d37m_11 = d37m_10_ed,
+    d37m_12 = d37m_10_ed
+  ) %>% 
+  select(-(ends_with("ed")))
 ```
 
 ### Carga datos 2024
@@ -93,64 +130,20 @@ cat("Folios únicos en 2024 consolidados:", n_distinct(datos_2024_consolidados[[
 # Creamos columna año para cada ola
 
 datos_2020_con_año <- datos_2020_consolidados %>% mutate(año = 2020)
+datos_2020_con_año <- limpiar_labels(datos_2020_con_año)
 datos_2024_con_año <- datos_2024_consolidados %>% mutate(año = 2024)
+datos_2024_con_año <- limpiar_labels(datos_2024_con_año)
+datos_2024_con_año <- datos_2024_con_año %>% 
+  mutate(a8=a8.x,
+         a9=a9.x)
 ```
 
 ```{r}
 
-# --- PASO 4: Seleccionar solo columnas comunes a ambos años ---
-
-nombres_cols_2020 <- names(datos_2020_con_año)
-nombres_cols_2024 <- names(datos_2024_con_año)
-
-# Encontrar las columnas que son comunes a ambos dataframes
-# Esto incluirá 'folio_n20' y 'año' si los pasos anteriores se ejecutaron correctamente.
-columnas_comunes_finales <- intersect(nombres_cols_2020, nombres_cols_2024)
-
-# Informar al usuario qué columnas se mantendrán y cuáles se descartarán
-message("\n--- Selección de Columnas Comunes para Apilar ---")
-if (length(columnas_comunes_finales) > 0) {
-  message(paste("Se mantendrán las siguientes", length(columnas_comunes_finales), 
-                "columnas porque tienen el mismo nombre en los datasets de 2020 y 2024:"))
-  print(sort(columnas_comunes_finales)) # Imprime en orden alfabético para fácil revisión
-} else {
-  stop("Error: No se encontraron columnas comunes entre los datasets de 2020 y 2024. ",
-       "Esto podría indicar un problema con los nombres de las columnas o los pasos anteriores. ",
-       "Al menos '", columna_folio, "' y 'año' deberían ser comunes.")
-}
-
-# Columnas que se descartarán de cada dataset porque no son comunes
-columnas_descartadas_2020 <- setdiff(nombres_cols_2020, columnas_comunes_finales)
-columnas_descartadas_2024 <- setdiff(nombres_cols_2024, columnas_comunes_finales)
-
-if (length(columnas_descartadas_2020) > 0) {
-  message("\nSe DESCARTARÁN las siguientes columnas del dataset 2020 (porque no tienen un nombre coincidente en 2024):")
-  print(sort(columnas_descartadas_2020))
-}
-if (length(columnas_descartadas_2024) > 0) {
-  message("\nSe DESCARTARÁN las siguientes columnas del dataset 2024 (porque no tienen un nombre coincidente en 2020):")
-  print(sort(columnas_descartadas_2024))
-}
-
-message("\nIMPORTANTE: Si una variable que mide lo mismo tiene nombres DIFERENTES en 2020 y 2024 (ej: 'ingreso' vs 'INGRESOS'),")
-message("y quieres conservarla, debes RENOMBRARLA para que los nombres coincidan EXACTAMENTE *antes* de este paso (PASO 4).")
-message("De lo contrario, si los nombres no son idénticos, una o ambas versiones de esa variable serán descartadas.")
-
-# Seleccionar solo las columnas comunes en cada dataframe anual
-# Usamos all_of() para mayor seguridad con los nombres de columna.
-datos_2020_seleccionados <- datos_2020_con_año %>%
-  select(all_of(columnas_comunes_finales))
-
-datos_2024_seleccionados <- datos_2024_con_año %>%
-  select(all_of(columnas_comunes_finales))
-
-cat("\nDimensiones de datos 2020 después de seleccionar columnas comunes:", dim(datos_2020_seleccionados), "\n")
-cat("Dimensiones de datos 2024 después de seleccionar columnas comunes:", dim(datos_2024_seleccionados), "\n")
-
 # --- PASO 5: Apilar los dataframes de 2020 y 2024 (ahora con columnas idénticas) ---
 # `bind_rows` apilará los dataframes. Como ahora tienen exactamente el mismo conjunto de columnas,
 # la alineación será perfecta.
-datos_apilados_raw <- bind_rows(datos_2020_seleccionados, datos_2024_seleccionados)
+datos_apilados_raw <- bind_rows(datos_2020_con_año, datos_2024_con_año)
 
 cat("\nDimensiones de datos apilados (después de seleccionar columnas comunes, antes de filtrar folios):", dim(datos_apilados_raw), "\n")
 cat("Nombres de columnas en datos_apilados_raw:\n")
@@ -193,6 +186,17 @@ print(head(datos_longitudinales_final, 10))
 cat("\nNombres de columnas del dataset longitudinal (formato largo):\n")
 print(names(datos_longitudinales_final))
 ```
+
+```{r}
+
+datos_longitudinales_final <- datos_longitudinales_final %>%
+  select(folio_n20, starts_with("d37m"), c34, a8, a9, año)
+
+saveRDS(datos_longitudinales_final, "./datos_proc/datos_ingreso_deuda.rds")
+
+```
+
+### Procedimiento EGP
 
 ### To do
 
