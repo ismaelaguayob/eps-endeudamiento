@@ -196,7 +196,96 @@ saveRDS(datos_longitudinales_final, "./datos_proc/datos_ingreso_deuda.rds")
 
 ```
 
-### Procedimiento EGP
+## Procedimiento EGP
+
+```{r}
+modulo_b_2020 <- read_stata("./datos-2020/MODULO_B_Historia_Laboral_in.dta")
+modulo_b_2024 <- read_stata("./datos-2024/MODULO_B_HISTORIA_LABORAL.dta")
+
+modulo_b_2020 <- modulo_b_2020 %>% 
+  select(folio_n20, CIUO_08_1dig, orden)
+
+modulo_b_2020$CIUO_08_1dig[modulo_b_2020$CIUO_08_1dig %in% c(7777, 10000)] <- NA
+modulo_b_2020 <- modulo_b_2020[!is.na(modulo_b_2020$CIUO_08_1dig), ]
+
+datos_ciuo8_2020 <- modulo_b_2020 %>%
+  group_by(folio_n20) %>%
+  filter(orden == max(orden, na.rm = TRUE)) %>%
+  ungroup()
+
+modulo_b_2024 <- modulo_b_2024 %>% 
+  select(folio_n20, CIUO_08_1dig, orden)
+
+modulo_b_2024$CIUO_08_1dig[modulo_b_2024$CIUO_08_1dig %in% c(7777, 10000)] <- NA
+modulo_b_2024 <- modulo_b_2024[!is.na(modulo_b_2024$CIUO_08_1dig), ]
+
+datos_ciuo8_2024 <- modulo_b_2024 %>%
+  group_by(folio_n20) %>%
+  filter(orden == max(orden, na.rm = TRUE)) %>%
+  ungroup()
+
+
+datos_ciuo8_2020 <- datos_ciuo8_2020 %>%
+  mutate(año = 2020)
+
+datos_ciuo8_2024 <- datos_ciuo8_2024 %>%
+  mutate(año = 2024)
+
+# Unir ambas bases en formato largo
+ciuo8all <- bind_rows(datos_ciuo8_2020, datos_ciuo8_2024)
+
+# Filtrar solo los folios que están presentes en ambos años
+folios_comunes <- ciuo8all %>%
+  group_by(folio_n20) %>%
+  summarise(n_años = n_distinct(año)) %>%
+  filter(n_años == 2) %>%
+  pull(folio_n20)
+
+# Mantener solo los casos con folio presente en ambos años
+ciuo8all <- ciuo8all %>%
+  filter(folio_n20 %in% folios_comunes)
+
+ingreso_deuda_proc <- readRDS("./datos_proc/datos_ingreso_deuda.rds")
+
+datos_all <- left_join(ciuo8all, ingreso_deuda_proc)
+
+vars_d37m <- c(
+  "d37m_2", "d37m_3", "d37m_5", "d37m_6", "d37m_7", 
+  "d37m_8", "d37m_9", "d37m_10", "d37m_11", "d37m_12"
+)
+
+datos_all[vars_d37m] <- lapply(datos_all[vars_d37m], function(x) {
+  x[x %in% c(8, 9)] <- NA
+  return(x)
+})
+
+
+datos_final <- datos_all %>%
+  filter(rowSums(!is.na(across(all_of(vars_d37m)))) > 0)
+```
+
+```{r}
+
+# Contamos cuántos años distintos tiene cada folio en los datos apilados.
+folios_con_conteo_años <- datos_final %>%
+  group_by(!!sym("folio_n20")) %>%
+  summarise(n_años_presente = n_distinct(año), .groups = 'drop')
+
+# Nos quedamos con los folios que están presentes en 2 años distintos
+folios_a_mantener <- folios_con_conteo_años %>%
+  filter(n_años_presente == 2) %>%
+  pull(!!sym("folio_n20"))
+
+# Filtramos el dataframe apilado original para mantener solo estos folios
+datos_final <- datos_final %>%
+  filter(!!sym("folio_n20") %in% folios_a_mantener)
+
+# Opcional: Ordenar para ver los datos por folio y luego por año
+datos_final <- datos_final %>%
+  arrange(!!sym("folio_n20"), año)
+
+saveRDS(datos_final, "./datos_proc/datos-egp-deuda-ingreso.rds")
+```
 
 ### To do
 
